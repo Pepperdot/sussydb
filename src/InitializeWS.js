@@ -7,11 +7,16 @@ function InitializeWS() {
     const Permissions = require('./Permissions').getInstance();
     const SussySettings = require('./Settings').getInstance();
     const CrudService = require('./CrudService').getInstance();
+    const InitializeHTTP = require('./InitializeHTTP');
+    const express = require('express');
+    const app = express();
+    const server = require('http').createServer(app);
+    InitializeHTTP(app);
     while(SussySettings.isReady() === false) {
         console.log('Waiting for settings to be ready...');
         setTimeout(() => {}, 1000);
     }
-    const wss = new WebSocket.Server({ port: SussySettings.getSetting('port') });
+    const wss = new WebSocket.Server({ server });
     console.log('SussyDB is running on port ' + SussySettings.getSetting('port'));
 
     wss.on('connection', function connection(ws) {
@@ -153,6 +158,9 @@ function InitializeWS() {
                 ws.close();
             }
         }, 15000);
+    });
+    server.listen(SussySettings.getSetting('port'), () => {
+        console.log(`HTTP Server started on port ${SussySettings.getSetting('port')}`);
     });
 }
 
