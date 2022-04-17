@@ -33,9 +33,11 @@ Change the port in sussysettings.json if needed.
 Authenticate with your user by sending an 'auth' message:
 
 {
-  "type": "login",
-  "username": "username",
-  "password": "password"
+  "type": "auth",
+  "auth": {
+    "name": "username",
+    "pwd": "password"
+  }
 }
 ```
 
