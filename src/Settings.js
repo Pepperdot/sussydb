@@ -29,6 +29,10 @@ class Settings {
         console.log('LoadSettings');
         if (fs.existsSync(this.settingsFile)) {
             this.settings = JSON.parse(fs.readFileSync(this.settingsFile));
+            this.settings.push({
+                name: 'version',
+                value: Buffer.from(fs.readFileSync(path.join('version.txt'), 'utf8'), 'base64').toString('utf8')
+            });
             this.ready = true;
         }
     }

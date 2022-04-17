@@ -6,6 +6,7 @@ function InitializeWS() {
     const Databases = require('./Databases').getInstance();
     const Permissions = require('./Permissions').getInstance();
     const SussySettings = require('./Settings').getInstance();
+    const CrudService = require('./CrudService').getInstance();
     while(SussySettings.isReady() === false) {
         console.log('Waiting for settings to be ready...');
         setTimeout(() => {}, 1000);
@@ -18,7 +19,16 @@ function InitializeWS() {
         let wsUser;
         console.log('New connection');
         ws.on('message', async function incoming(message) {
-            const json = JSON.parse(message);
+            let json;
+            try {
+                json = JSON.parse(message);
+            } catch (e) {
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    message: 'Invalid JSON'
+                }));
+                return;
+            }
             if(json === undefined) {
                 console.log('Received undefined message');
                 ws.close();
@@ -47,10 +57,13 @@ function InitializeWS() {
                         const checkIfExists = await Databases.dbExists(json.name);
                         if(checkIfExists === true) {
                             const userHasPerm = await Permissions.userHasPermission(wsUser.permissions, json.name);
+                            const collections = await Databases.getCollections(json.name);
                             if(userHasPerm.length > 0) {
                                 ws.send(JSON.stringify({
                                     type: "db",
                                     permissions: userHasPerm,
+                                    db: json.name,
+                                    collections: collections,
                                     success: true
                                 }));
                             } else {
@@ -67,6 +80,70 @@ function InitializeWS() {
                                 success: false
                             }));
                         }
+                    }
+                    break;
+                case "crud":
+                    if(wsAuthed === true) {
+                        const checkIfExists = await Databases.dbExists(json.crud.db);
+                        const checkIfCollectionExists = await Databases.collectionExists(json.crud.db, json.crud.collection);
+                        if(checkIfExists === true) {
+                            const userHasPerm = await Permissions.userHasPermission(wsUser.permissions, json.crud.db);
+                            if(userHasPerm.length > 0) {
+                                const crud = await CrudService.handleCrud(json.crud);
+                                let success = false;
+                                if(crud === null) {
+                                    success = false;
+                                } else {
+                                    success = true;
+                                }
+                                ws.send(JSON.stringify({
+                                    type: "crud",
+                                    crud: crud,
+                                    success: success
+                                }));
+                            } else {
+                                ws.send(JSON.stringify({
+                                    type: "crud",
+                                    name: json.name,
+                                    success: false
+                                }));
+                            }
+                        } else {
+                            ws.send(JSON.stringify({
+                                type: "crud",
+                                name: json.name,
+                                success: false
+                            }));
+                        }
+                    }
+                    break;
+                case "info":
+                    let toGive = {};
+                    let version = SussySettings.getSetting('version');
+                    toGive.name = "SussyDB";
+                    toGive.version = version;
+                    ws.send(JSON.stringify({
+                        type: "info",
+                        info: toGive,
+                        success: true
+                    }));
+                    break;
+                case "dbs":
+                    if(wsAuthed === true) {
+                        const dbsBeforePerm = await Databases.getDBs();
+                        let dbs = [];
+                        for(let i = 0; i < dbsBeforePerm.length; i++) {
+                            const db = dbsBeforePerm[i].name;
+                            const userHasPerm = await Permissions.userHasPermission(wsUser.permissions, db);
+                            if(userHasPerm.length > 0) {
+                                dbs.push(db);
+                            }
+                        }
+                        ws.send(JSON.stringify({
+                            type: "dbs",
+                            dbs: dbs,
+                            success: true
+                        }));
                     }
                     break;
             }

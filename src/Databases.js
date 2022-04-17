@@ -3,20 +3,28 @@ class Databases {
     this.databases = [];
   }
 
-  push(database) {
+  pushDBs(database) {
     this.databases.push(database);
   }
 
-  get() {
+  getDBs() {
     return this.databases;
   }
 
+  getCollections(name) {
+    return this.databases.find(database => database.name === name).collections;
+  }
+
   getByName(name) {
-    return this.databases.find(database => database === name);
+    return this.databases.find(database => database.name === name);
   }
 
   dbExists(name) {
-    return !!this.databases.find(database => database === name);
+    return !!this.databases.find(database => database.name === name);
+  }
+
+  collectionExists(name, collection) {
+    return !!this.databases.find(database => database.name === name).collections.find(col => col === collection);
   }
 }
 

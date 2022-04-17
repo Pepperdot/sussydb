@@ -15,10 +15,18 @@ function InitializeDB() {
         console.log("Loading database...");
         fs.readdirSync(dbFolder).forEach(file => {
             if(fs.lstatSync(path.join(dbFolder, file)).isDirectory()) {
-                databases.push(file);
+                let toInsert = {};
+                toInsert.name = file;
+                toInsert.collections = [];
+                fs.readdirSync(path.join(dbFolder, file)).forEach(file2 => {
+                    if(file2.endsWith(".json")) {
+                        toInsert.collections.push(file2.substring(0, file2.length - 5));
+                    }
+                });
+                databases.pushDBs(toInsert);
             }
         });
-        console.log("Loaded " + databases.get().length + " databases.");
+        console.log("Loaded " + databases.getDBs().length + " databases.");
         InitializeWS();
     } else {
         console.log("Welcome to SussyDB. Please wait while we create the database folder...");
