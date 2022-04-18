@@ -17,6 +17,11 @@ function InitializeWS() {
         setTimeout(() => {}, 1000);
     }
     const wss = new WebSocket.Server({ server });
+    app.on('upgrade', (req, socket, head) => {
+        wss.handleUpgrade(req, socket, head, (ws) => {
+            wss.emit('connection', ws, req);
+        });
+    });
     console.log('SussyDB is running on port ' + SussySettings.getSetting('port'));
 
     wss.on('connection', function connection(ws) {
