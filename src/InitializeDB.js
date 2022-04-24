@@ -6,7 +6,7 @@ const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
 });
-const InitializeWS = require('./InitializeWS');
+const {InitializeWS} = require('./InitializeWS');
 let databases = Databases.getInstance();
 
 function InitializeDB() {
@@ -41,7 +41,7 @@ function InitializeDB() {
         fs.writeFileSync(path.join(dbFolder, 'admin', 'admin.json'), JSON.stringify([]));
         fs.writeFileSync(path.join(dbFolder, 'test', 'test.json'), JSON.stringify([]));
         fs.writeFileSync(path.join('privatedb/', 'users', 'users.json'), JSON.stringify([]));
-        fs.writeFileSync('sussysettings.json', JSON.stringify([{name: "port", value: 6942}]));
+        fs.writeFileSync('sussysettings.json', JSON.stringify([{name: "port", value: 6942},{name:"name",value:"SussyDB"}]));
         console.log("Databases and collections created.\n\n");
         console.log("Now you will be asked to create a user.\n");
         readline.question("Input a username for the user: ", name => {

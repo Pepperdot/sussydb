@@ -1,3 +1,17 @@
+let active = false;
+
+function SocketIsActive() {
+    if(active) {
+        return true;
+    }
+    setTimeout(() => {
+        if(active) {
+            return true;
+        }
+        return false;
+    }, 2500);
+}
+
 function InitializeWS() {
     console.log("InitializeWS");
     const WebSocket = require('ws');
@@ -23,6 +37,7 @@ function InitializeWS() {
         });
     });
     console.log('SussyDB is running on port ' + SussySettings.getSetting('port'));
+    active = true;
 
     wss.on('connection', function connection(ws) {
         let wsAuthed = false;
@@ -169,4 +184,7 @@ function InitializeWS() {
     });
 }
 
-module.exports = InitializeWS;
+module.exports = {
+    InitializeWS,
+    SocketIsActive
+};
